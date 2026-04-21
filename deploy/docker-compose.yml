@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sales_diagnostics
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ../api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/sales_diagnostics
+      INTERNAL_API_BASE_URL: http://api:8000/api
+      API_UPSTREAM_URL: http://api:8000
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ../web
+      args:
+        NEXT_PUBLIC_API_BASE_URL: /api
+        NEXT_PUBLIC_TELEGRAM_BOT_USERNAME: ${NEXT_PUBLIC_TELEGRAM_BOT_USERNAME}
+        API_UPSTREAM_URL: http://api:8000
+    restart: unless-stopped
+    depends_on:
+      - api
+    env_file:
+      - ../.env
+    environment:
+      API_UPSTREAM_URL: http://api:8000
+    ports:
+      - "3000:3000"
+
+  bot:
+    build:
+      context: ../api
+    restart: unless-stopped
+    depends_on:
+      - api
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/sales_diagnostics
+      INTERNAL_API_BASE_URL: http://api:8000/api
+    command: ["python", "-m", "app.bot.client_bot"]
+
+  owner_bot:
+    build:
+      context: ../api
+    restart: unless-stopped
+    depends_on:
+      - api
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/sales_diagnostics
+      INTERNAL_API_BASE_URL: http://api:8000/api
+    command: ["python", "-m", "app.bot.owner_bot"]
+
+volumes:
+  pg_data:
