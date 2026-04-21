@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { API_BASE_URL, TELEGRAM_BOT_USERNAME } from "@/lib/api";
 
 type LeadPageProps = {
@@ -27,9 +25,9 @@ export default async function LeadPage({ params }: LeadPageProps) {
         <p>Спасибо, {lead.name}. Ваша заявка зарегистрирована.</p>
         <p>Статус: {lead.status}</p>
         <p>Следующий шаг: откройте Telegram-бота и ответьте на короткие вопросы.</p>
-        <Link className="buttonLink" href={telegramLink} target="_blank">
+        <a className="buttonLink" href={telegramLink} target="_blank" rel="noreferrer">
           Перейти в Telegram-бота
-        </Link>
+        </a>
       </section>
     </main>
   );
