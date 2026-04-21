@@ -17,8 +17,8 @@ app = FastAPI(title=settings.app_name)
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app_ref: FastAPI, requests_per_minute: int):
-        super().__init__(app_ref)
+    def __init__(self, app, requests_per_minute: int):
+        super().__init__(app)
         self.requests_per_minute = requests_per_minute
         self.events: dict[str, deque[float]] = defaultdict(deque)
 
