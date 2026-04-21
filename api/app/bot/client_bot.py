@@ -4,13 +4,14 @@ from uuid import UUID
 import httpx
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message
+from aiogram.types import ForceReply, Message
 
 from app.config import settings
 from app.services.intake import INTAKE_QUESTIONS
 
 dp = Dispatcher()
 bot = Bot(token=settings.telegram_client_bot_token)
+ACTIVE_LEADS_BY_CHAT: dict[int, str] = {}
 
 
 FAQ_ANSWERS = {
@@ -52,8 +53,10 @@ async def on_start(message: Message):
     await message.answer(
         "Спасибо! Начинаем короткую диагностику отдела продаж.\n\n"
         f"Вопрос 1/{len(INTAKE_QUESTIONS)}: {INTAKE_QUESTIONS[0]}\n\n"
-        f"lead_id={lead_id}"
+        f"lead_id={lead_id}",
+        reply_markup=ForceReply(selective=True),
     )
+    ACTIVE_LEADS_BY_CHAT[message.chat.id] = lead_id
 
 
 @dp.message(F.text)
@@ -61,6 +64,8 @@ async def on_answer(message: Message):
     lead_id = None
     if message.reply_to_message and message.reply_to_message.text and "lead_id=" in message.reply_to_message.text:
         lead_id = message.reply_to_message.text.split("lead_id=")[-1].strip()
+    if not lead_id:
+        lead_id = ACTIVE_LEADS_BY_CHAT.get(message.chat.id)
     if not lead_id:
         await message.answer("Ответ засчитан. Для сохранения в систему отвечай на сообщение с вопросом от бота.")
         return
@@ -78,6 +83,7 @@ async def on_answer(message: Message):
     next_question = data.get("next_question")
     if not next_question:
         await message.answer("Спасибо! Контекст собран. Запускаю диагностику...")
+        ACTIVE_LEADS_BY_CHAT.pop(message.chat.id, None)
         async with httpx.AsyncClient(timeout=120) as client:
             diag_response = await client.post(
                 f"{settings.internal_api_base_url.rstrip('/')}/leads/{lead_id}/diagnose"
@@ -89,7 +95,10 @@ async def on_answer(message: Message):
         summary = diag.get("report", {}).get("executive_summary", "Отчет готов.")
         await message.answer(f"Готово. Кратко:\n\n{summary}")
         return
-    await message.answer(f"Следующий вопрос: {next_question}\n\nlead_id={lead_id}")
+    await message.answer(
+        f"Следующий вопрос: {next_question}\n\nlead_id={lead_id}",
+        reply_markup=ForceReply(selective=True),
+    )
 
 
 async def main():
