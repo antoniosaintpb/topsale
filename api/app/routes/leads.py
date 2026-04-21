@@ -1,9 +1,13 @@
 from uuid import UUID
 
+import asyncio
+
+from aiogram import Bot
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, selectinload
 
+from app.config import settings
 from app.models import Lead, LeadContext, LeadStatus
 from app.schemas import (
     LeadContextCreate,
@@ -19,6 +23,26 @@ from app.database import get_db
 router = APIRouter(prefix="/leads", tags=["leads"])
 
 
+async def _send_new_lead_to_owner(lead: Lead) -> None:
+    bot = Bot(token=settings.telegram_owner_bot_token)
+    owner_url = f"{settings.web_base_url.rstrip('/')}/owner/lead/{lead.id}"
+    text = (
+        "Новая заявка с сайта\n"
+        f"id: {lead.id}\n"
+        f"Имя: {lead.name}\n"
+        f"Ниша: {lead.niche}\n"
+        f"Команда: {lead.team_size}\n"
+        f"Telegram: {lead.telegram_username or '-'}\n"
+        f"Телефон: {lead.phone or '-'}\n"
+        f"Проблема: {lead.problem}\n\n"
+        f"Открыть: {owner_url}"
+    )
+    try:
+        await bot.send_message(chat_id=int(settings.owner_telegram_chat_id), text=text)
+    finally:
+        await bot.session.close()
+
+
 @router.get("", response_model=list[LeadSummary])
 def list_leads(limit: int = 50, db: Session = Depends(get_db)):
     safe_limit = max(1, min(limit, 200))
@@ -31,6 +55,12 @@ def create_lead(payload: LeadCreate, db: Session = Depends(get_db)):
     db.add(lead)
     db.commit()
     db.refresh(lead)
+    if settings.telegram_owner_bot_token and settings.owner_telegram_chat_id:
+        try:
+            asyncio.run(_send_new_lead_to_owner(lead))
+        except Exception:
+            # Owner notification should not block lead creation.
+            pass
     return lead
 
 
