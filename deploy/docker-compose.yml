@@ -1,4 +1,22 @@
 services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - web
+      - api
+    env_file:
+      - ../.env
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
   postgres:
     image: postgres:16
     restart: unless-stopped
@@ -21,8 +39,8 @@ services:
       DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/sales_diagnostics
       INTERNAL_API_BASE_URL: http://api:8000/api
       API_UPSTREAM_URL: http://api:8000
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
 
   web:
     build:
@@ -38,8 +56,8 @@ services:
       - ../.env
     environment:
       API_UPSTREAM_URL: http://api:8000
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
 
   bot:
     build:
@@ -69,3 +87,5 @@ services:
 
 volumes:
   pg_data:
+  caddy_data:
+  caddy_config:
