@@ -1,9 +1,8 @@
+import asyncio
 from uuid import UUID
 
-import asyncio
-
 from aiogram import Bot
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, selectinload
 
@@ -23,24 +22,57 @@ from app.database import get_db
 router = APIRouter(prefix="/leads", tags=["leads"])
 
 
-async def _send_new_lead_to_owner(lead: Lead) -> None:
+async def _send_new_lead_to_owner(
+    lead_id: UUID,
+    name: str,
+    niche: str,
+    team_size: int,
+    telegram_username: str | None,
+    phone: str | None,
+    problem: str,
+) -> None:
     bot = Bot(token=settings.telegram_owner_bot_token)
-    owner_url = f"{settings.web_base_url.rstrip('/')}/owner/lead/{lead.id}"
+    owner_url = f"{settings.web_base_url.rstrip('/')}/owner/lead/{lead_id}"
     text = (
         "Новая заявка с сайта\n"
-        f"id: {lead.id}\n"
-        f"Имя: {lead.name}\n"
-        f"Ниша: {lead.niche}\n"
-        f"Команда: {lead.team_size}\n"
-        f"Telegram: {lead.telegram_username or '-'}\n"
-        f"Телефон: {lead.phone or '-'}\n"
-        f"Проблема: {lead.problem}\n\n"
+        f"id: {lead_id}\n"
+        f"Имя: {name}\n"
+        f"Ниша: {niche}\n"
+        f"Команда: {team_size}\n"
+        f"Telegram: {telegram_username or '-'}\n"
+        f"Телефон: {phone or '-'}\n"
+        f"Проблема: {problem}\n\n"
         f"Открыть: {owner_url}"
     )
     try:
         await bot.send_message(chat_id=int(settings.owner_telegram_chat_id), text=text)
     finally:
         await bot.session.close()
+
+
+def _send_new_lead_to_owner_background(
+    lead_id: UUID,
+    name: str,
+    niche: str,
+    team_size: int,
+    telegram_username: str | None,
+    phone: str | None,
+    problem: str,
+) -> None:
+    asyncio.run(
+        asyncio.wait_for(
+            _send_new_lead_to_owner(
+                lead_id=lead_id,
+                name=name,
+                niche=niche,
+                team_size=team_size,
+                telegram_username=telegram_username,
+                phone=phone,
+                problem=problem,
+            ),
+            timeout=15,
+        )
+    )
 
 
 @router.get("", response_model=list[LeadSummary])
@@ -50,17 +82,26 @@ def list_leads(limit: int = 50, db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=LeadRead)
-def create_lead(payload: LeadCreate, db: Session = Depends(get_db)):
+def create_lead(
+    payload: LeadCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     lead = Lead(**payload.model_dump())
     db.add(lead)
     db.commit()
     db.refresh(lead)
     if settings.telegram_owner_bot_token and settings.owner_telegram_chat_id:
-        try:
-            asyncio.run(_send_new_lead_to_owner(lead))
-        except Exception:
-            # Owner notification should not block lead creation.
-            pass
+        background_tasks.add_task(
+            _send_new_lead_to_owner_background,
+            lead.id,
+            lead.name,
+            lead.niche,
+            lead.team_size,
+            lead.telegram_username,
+            lead.phone,
+            lead.problem,
+        )
     return lead
 
 

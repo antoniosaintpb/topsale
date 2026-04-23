@@ -4,7 +4,7 @@ import asyncio
 
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -27,8 +27,16 @@ async def _send_owner_message(text: str, keyboard: InlineKeyboardMarkup | None =
         await bot.session.close()
 
 
+def _send_owner_message_background(text: str, keyboard: InlineKeyboardMarkup | None = None) -> None:
+    asyncio.run(asyncio.wait_for(_send_owner_message(text, keyboard), timeout=15))
+
+
 @router.post("/{lead_id}/diagnose")
-def diagnose_lead(lead_id: UUID, db: Session = Depends(get_db)):
+def diagnose_lead(
+    lead_id: UUID,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     try:
         report = create_diagnosis_for_lead(db, lead_id)
     except ValueError as exc:
@@ -45,24 +53,20 @@ def diagnose_lead(lead_id: UUID, db: Session = Depends(get_db)):
     maybe_notify_owner(db, lead_id, summary)
 
     if settings.telegram_owner_bot_token and settings.owner_telegram_chat_id:
-        try:
-            owner_url = f"{settings.web_base_url.rstrip('/')}/owner/lead/{lead.id}"
-            keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(text="В работе", callback_data=f"status:in_work:{lead.id}"),
-                        InlineKeyboardButton(text="Связался", callback_data=f"status:contacted:{lead.id}"),
-                    ],
-                    [
-                        InlineKeyboardButton(text="Консультация", callback_data=f"status:diagnosis_ready:{lead.id}"),
-                    ],
-                    [InlineKeyboardButton(text="Открыть в web", url=owner_url)],
-                ]
-            )
-            asyncio.run(_send_owner_message(summary, keyboard))
-        except Exception:
-            # Owner notification must not break diagnosis creation
-            pass
+        owner_url = f"{settings.web_base_url.rstrip('/')}/owner/lead/{lead.id}"
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="В работе", callback_data=f"status:in_work:{lead.id}"),
+                    InlineKeyboardButton(text="Связался", callback_data=f"status:contacted:{lead.id}"),
+                ],
+                [
+                    InlineKeyboardButton(text="Консультация", callback_data=f"status:diagnosis_ready:{lead.id}"),
+                ],
+                [InlineKeyboardButton(text="Открыть в web", url=owner_url)],
+            ]
+        )
+        background_tasks.add_task(_send_owner_message_background, summary, keyboard)
 
     return {"lead_id": str(lead_id), "report_id": report.id, "report": report.report_payload}
 
