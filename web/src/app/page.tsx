@@ -112,14 +112,16 @@ export default function HomePage() {
       <section className="siteShell">
         <header className="topbar">
           <div className="brand">TopSell</div>
-          <nav className="topnav" aria-label="Основная навигация">
-            <a href="#services">Услуги</a>
-            <a href="#process">Процесс</a>
-            <a href="#faq">FAQ</a>
-          </nav>
-          <a className="topbarCta" href="#lead-form">
-            Оставить заявку
-          </a>
+          <div className="topbarMenu">
+            <nav className="topnav" aria-label="Основная навигация">
+              <a href="#services">Услуги</a>
+              <a href="#process">Процесс</a>
+              <a href="#faq">FAQ</a>
+            </nav>
+            <a className="topbarCta" href="#lead-form">
+              Оставить заявку
+            </a>
+          </div>
         </header>
 
         <section className="heroGrid">

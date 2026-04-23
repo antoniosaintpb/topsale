@@ -36,6 +36,12 @@ body {
   box-shadow: 0 12px 30px rgba(19, 32, 76, 0.06);
 }
 
+.topbarMenu {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .brand {
   font-size: 1.25rem;
   font-weight: 700;
@@ -517,6 +523,91 @@ button:disabled {
   gap: 18px;
 }
 
+.leadSuccessShell {
+  min-height: 100vh;
+  padding-top: 24px;
+}
+
+.successTopbar {
+  margin-bottom: 28px;
+}
+
+.successBrandLink,
+.successBackLink,
+.successSecondaryCta {
+  text-decoration: none;
+}
+
+.successBackLink {
+  color: #4b5876;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.leadSuccessHero {
+  padding: 40px;
+}
+
+.successTitle {
+  max-width: 860px;
+}
+
+.successText {
+  max-width: 720px;
+}
+
+.successActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.successPrimaryCta,
+.successSecondaryCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.successSecondaryCta {
+  border: 1px solid #d6deef;
+  background: #f7f9ff;
+  color: #172036;
+}
+
+.successChecklist {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 34px;
+}
+
+.successStepCard {
+  display: grid;
+  gap: 10px;
+  padding: 22px;
+  border: 1px solid #e5eaf5;
+  border-radius: 20px;
+  background: #f9fbff;
+}
+
+.successStepCard strong {
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.successStepCard span {
+  color: #4b5876;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
 @media (max-width: 768px) {
   .siteShell {
     padding: 16px 14px 40px;
@@ -525,13 +616,34 @@ button:disabled {
   .topbar {
     flex-direction: column;
     align-items: stretch;
-    padding: 16px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .brand {
+    padding: 20px 22px;
+    border-radius: 22px;
+    border: 1px solid #e5eaf5;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(19, 32, 76, 0.06);
+    font-size: 2rem;
+  }
+
+  .topbarMenu {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 28px;
+    border: 1px solid #e5eaf5;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(19, 32, 76, 0.06);
   }
 
   .topnav {
     justify-content: space-between;
     gap: 12px;
-    flex-wrap: wrap;
   }
 
   .heroGrid,
@@ -555,7 +667,9 @@ button:disabled {
   }
 
   .heroActions a,
-  .topbarCta {
+  .topbarCta,
+  .successActions a,
+  .successActions .successSecondaryCta {
     width: 100%;
   }
 
@@ -574,5 +688,17 @@ button:disabled {
   .formFooter {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .leadSuccessHero {
+    padding: 24px 20px;
+  }
+
+  .successChecklist {
+    grid-template-columns: 1fr;
+  }
+
+  .successTopbarMenu {
+    padding: 14px;
   }
 }

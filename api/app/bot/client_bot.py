@@ -53,8 +53,7 @@ async def on_start(message: Message):
 
     await message.answer(
         "Спасибо! Начинаем короткую диагностику отдела продаж.\n\n"
-        f"Вопрос 1/{len(INTAKE_QUESTIONS)}: {INTAKE_QUESTIONS[0]}\n\n"
-        f"lead_id={lead_id}",
+        f"Вопрос 1/{len(INTAKE_QUESTIONS)}: {INTAKE_QUESTIONS[0]}",
         reply_markup=ForceReply(selective=True),
     )
     ACTIVE_LEADS_BY_CHAT[message.chat.id] = lead_id
@@ -62,11 +61,7 @@ async def on_start(message: Message):
 
 @dp.message(F.text)
 async def on_answer(message: Message):
-    lead_id = None
-    if message.reply_to_message and message.reply_to_message.text and "lead_id=" in message.reply_to_message.text:
-        lead_id = message.reply_to_message.text.split("lead_id=")[-1].strip()
-    if not lead_id:
-        lead_id = ACTIVE_LEADS_BY_CHAT.get(message.chat.id)
+    lead_id = ACTIVE_LEADS_BY_CHAT.get(message.chat.id)
     if not lead_id:
         await message.answer("Ответ засчитан. Для сохранения в систему отвечай на сообщение с вопросом от бота.")
         return
@@ -97,7 +92,7 @@ async def on_answer(message: Message):
         await message.answer(f"Готово. Кратко:\n\n{summary}")
         return
     await message.answer(
-        f"Следующий вопрос: {next_question}\n\nlead_id={lead_id}",
+        f"Следующий вопрос: {next_question}",
         reply_markup=ForceReply(selective=True),
     )
 
