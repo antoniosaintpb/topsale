@@ -1,7 +1,6 @@
 import asyncio
 from uuid import UUID
 
-from aiogram import Bot
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, selectinload
@@ -18,6 +17,7 @@ from app.schemas import (
 )
 from app.services.intake import INTAKE_QUESTIONS, get_next_question
 from app.database import get_db
+from app.telegram import create_telegram_bot
 
 router = APIRouter(prefix="/leads", tags=["leads"])
 
@@ -31,7 +31,7 @@ async def _send_new_lead_to_owner(
     phone: str | None,
     problem: str,
 ) -> None:
-    bot = Bot(token=settings.telegram_owner_bot_token)
+    bot = create_telegram_bot(settings.telegram_owner_bot_token)
     owner_url = f"{settings.web_base_url.rstrip('/')}/owner/lead/{lead_id}"
     text = (
         "Новая заявка с сайта\n"

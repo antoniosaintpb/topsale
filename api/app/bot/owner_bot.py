@@ -1,15 +1,16 @@
 import asyncio
 
 import httpx
-from aiogram import Bot, Dispatcher, F
+from aiogram import Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 
 from app.config import settings
 from app.models import LeadStatus
+from app.telegram import create_telegram_bot
 
 dp = Dispatcher()
-bot = Bot(token=settings.telegram_owner_bot_token)
+bot = create_telegram_bot(settings.telegram_owner_bot_token)
 
 
 @dp.message(Command("start"))

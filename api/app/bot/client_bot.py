@@ -2,15 +2,16 @@ import asyncio
 from uuid import UUID
 
 import httpx
-from aiogram import Bot, Dispatcher, F
+from aiogram import Dispatcher, F
 from aiogram.filters import Command, CommandStart
 from aiogram.types import ForceReply, Message
 
 from app.config import settings
 from app.services.intake import INTAKE_QUESTIONS
+from app.telegram import create_telegram_bot
 
 dp = Dispatcher()
-bot = Bot(token=settings.telegram_client_bot_token)
+bot = create_telegram_bot(settings.telegram_client_bot_token)
 ACTIVE_LEADS_BY_CHAT: dict[int, str] = {}
 
 

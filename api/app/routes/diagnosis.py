@@ -2,7 +2,6 @@ from uuid import UUID
 
 import asyncio
 
-from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -11,12 +10,13 @@ from app.config import settings
 from app.database import get_db
 from app.models import AgentReport, Lead
 from app.services.diagnosis import create_diagnosis_for_lead, maybe_notify_owner
+from app.telegram import create_telegram_bot
 
 router = APIRouter(prefix="/leads", tags=["diagnosis"])
 
 
 async def _send_owner_message(text: str, keyboard: InlineKeyboardMarkup | None = None) -> None:
-    bot = Bot(token=settings.telegram_owner_bot_token)
+    bot = create_telegram_bot(settings.telegram_owner_bot_token)
     try:
         await bot.send_message(
             chat_id=int(settings.owner_telegram_chat_id),
