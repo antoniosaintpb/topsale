@@ -3,6 +3,8 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import ColorBends from "@/components/ColorBends";
+import CountUp from "@/components/CountUp";
 import { API_BASE_URL } from "@/lib/api";
 
 export default function HomePage() {
@@ -45,7 +47,25 @@ export default function HomePage() {
   }
 
   return (
-    <main className="container">
+    <main className="container pageWithShader">
+      <div className="shaderBackground" aria-hidden>
+        <ColorBends
+          rotation={90}
+          speed={0.2}
+          colors={["#A855F7"]}
+          transparent
+          autoRotate={0}
+          scale={0.7}
+          frequency={1}
+          warpStrength={1}
+          mouseInfluence={2}
+          parallax={0.5}
+          noise={0.34}
+          iterations={1}
+          intensity={1.5}
+          bandWidth={6}
+        />
+      </div>
       <header className="hero">
         <h1>AI-диагностика отдела продаж</h1>
         <p className="sectionLead" style={{ marginBottom: 0 }}>
@@ -71,15 +91,21 @@ export default function HomePage() {
         </p>
         <div className="stats">
           <div className="stat">
-            <div className="statValue">24 ч</div>
+            <div className="statValue">
+              <CountUp to={24} duration={1.2} className="countUpText" /> ч
+            </div>
             <div className="statLabel">ориентир по первому отчёту после сбора контекста</div>
           </div>
           <div className="stat">
-            <div className="statValue">5–7</div>
+            <div className="statValue">
+              <CountUp to={5} duration={1.2} className="countUpText" />-<CountUp to={7} duration={1.2} className="countUpText" />
+            </div>
             <div className="statLabel">коротких вопросов в Telegram вместо длинных брифов</div>
           </div>
           <div className="stat">
-            <div className="statValue">1</div>
+            <div className="statValue">
+              <CountUp to={1} duration={1} className="countUpText" />
+            </div>
             <div className="statLabel">понятный список приоритетов, а не десяток слайдов «для галочки»</div>
           </div>
         </div>
