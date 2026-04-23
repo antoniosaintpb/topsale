@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import CountUp from "@/components/CountUp";
@@ -68,10 +68,25 @@ const faqItems = [
   }
 ] as const;
 
+function normalizeTelegramUsername(rawValue: string) {
+  const compactValue = rawValue.trim().replace(/\s+/g, "");
+  if (!compactValue) {
+    return "";
+  }
+
+  const usernameWithoutAt = compactValue.replace(/^@+/, "");
+  return usernameWithoutAt ? `@${usernameWithoutAt}` : "@";
+}
+
 export default function HomePage() {
   const router = useRouter();
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [telegramUsername, setTelegramUsername] = useState("");
+
+  function onTelegramUsernameChange(event: ChangeEvent<HTMLInputElement>) {
+    setTelegramUsername(normalizeTelegramUsername(event.target.value));
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,12 +94,14 @@ export default function HomePage() {
     setError(null);
 
     const form = new FormData(event.currentTarget);
+    const normalizedTelegramUsername = normalizeTelegramUsername(String(form.get("telegram_username") || ""));
     const payload = {
       name: String(form.get("name") || ""),
       niche: String(form.get("niche") || ""),
       team_size: Number(form.get("team_size") || 1),
       problem: String(form.get("problem") || ""),
-      telegram_username: String(form.get("telegram_username") || "") || null,
+      telegram_username:
+        normalizedTelegramUsername && normalizedTelegramUsername !== "@" ? normalizedTelegramUsername : null,
       phone: String(form.get("phone") || "") || null
     };
 
@@ -307,7 +324,15 @@ export default function HomePage() {
               </label>
               <label>
                 Telegram username
-                <input name="telegram_username" placeholder="@username" />
+                <input
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  name="telegram_username"
+                  onChange={onTelegramUsernameChange}
+                  placeholder="@username"
+                  spellCheck={false}
+                  value={telegramUsername}
+                />
               </label>
             </div>
 

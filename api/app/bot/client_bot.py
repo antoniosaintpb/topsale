@@ -13,6 +13,7 @@ from app.telegram import create_telegram_bot
 dp = Dispatcher()
 bot = create_telegram_bot(settings.telegram_client_bot_token)
 ACTIVE_LEADS_BY_CHAT: dict[int, str] = {}
+LAST_LEAD_BY_CHAT: dict[int, str] = {}
 
 
 FAQ_ANSWERS = {
@@ -44,6 +45,30 @@ def parse_lead_id_from_start(text: str) -> str | None:
         return None
 
 
+def is_consultation_request(text: str) -> bool:
+    normalized = text.strip().lower()
+    return "консультац" in normalized or "созвон" in normalized or "связаться" in normalized
+
+
+async def notify_owner_about_consultation_request(lead_id: str, message: Message) -> None:
+    if not settings.telegram_owner_bot_token or not settings.owner_telegram_chat_id:
+        return
+
+    owner_bot = create_telegram_bot(settings.telegram_owner_bot_token)
+    username = f"@{message.from_user.username}" if message.from_user and message.from_user.username else "-"
+    text = (
+        "Клиент запросил консультацию\n"
+        f"lead_id: {lead_id}\n"
+        f"Telegram клиента: {username}\n"
+        f"Имя в Telegram: {message.from_user.full_name if message.from_user else '-'}\n"
+        f"Текст: {message.text or '-'}"
+    )
+    try:
+        await owner_bot.send_message(chat_id=int(settings.owner_telegram_chat_id), text=text)
+    finally:
+        await owner_bot.session.close()
+
+
 @dp.message(CommandStart())
 async def on_start(message: Message):
     lead_id = parse_lead_id_from_start(message.text or "")
@@ -57,12 +82,20 @@ async def on_start(message: Message):
         reply_markup=ForceReply(selective=True),
     )
     ACTIVE_LEADS_BY_CHAT[message.chat.id] = lead_id
+    LAST_LEAD_BY_CHAT[message.chat.id] = lead_id
 
 
 @dp.message(F.text)
 async def on_answer(message: Message):
     lead_id = ACTIVE_LEADS_BY_CHAT.get(message.chat.id)
     if not lead_id:
+        last_lead_id = LAST_LEAD_BY_CHAT.get(message.chat.id)
+        if last_lead_id and is_consultation_request(message.text or ""):
+            await notify_owner_about_consultation_request(last_lead_id, message)
+            await message.answer(
+                "Принято. Зафиксировали запрос на консультацию и скоро свяжемся с вами, чтобы согласовать следующий шаг."
+            )
+            return
         await message.answer("Ответ засчитан. Для сохранения в систему отвечай на сообщение с вопросом от бота.")
         return
 
@@ -80,6 +113,7 @@ async def on_answer(message: Message):
     if not next_question:
         await message.answer("Спасибо! Контекст собран. Запускаю диагностику...")
         ACTIVE_LEADS_BY_CHAT.pop(message.chat.id, None)
+        LAST_LEAD_BY_CHAT[message.chat.id] = lead_id
         async with httpx.AsyncClient(timeout=120) as client:
             diag_response = await client.post(
                 f"{settings.internal_api_base_url.rstrip('/')}/leads/{lead_id}/diagnose"
@@ -90,6 +124,10 @@ async def on_answer(message: Message):
         diag = diag_response.json()
         summary = diag.get("report", {}).get("executive_summary", "Отчет готов.")
         await message.answer(f"Готово. Кратко:\n\n{summary}")
+        await message.answer(
+            "Если хотите записаться на консультацию по итогам диагностики, просто напишите в ответ "
+            '"Хочу консультацию" и мы отдельно свяжемся с вами.'
+        )
         return
     await message.answer(
         f"Следующий вопрос: {next_question}",
