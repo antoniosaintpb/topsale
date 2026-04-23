@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     telegram_client_bot_token: str = ""
     telegram_owner_bot_token: str = ""
     owner_telegram_chat_id: int = 0
+    telegram_proxy_url: str = ""
 
     yandex_folder_id: str = ""
     yandex_iam_token: str = ""
