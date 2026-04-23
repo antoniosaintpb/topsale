@@ -3,9 +3,70 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import ColorBends from "@/components/ColorBends";
 import CountUp from "@/components/CountUp";
 import { API_BASE_URL } from "@/lib/api";
+
+const services = [
+  {
+    title: "Экспресс-диагностика продаж",
+    description:
+      "Быстро выявляем, где теряются заявки, где тормозит воронка и какие решения дадут наибольший эффект в ближайшие недели."
+  },
+  {
+    title: "Разбор CRM и регламентов",
+    description:
+      "Смотрим, как у вас устроены этапы, поля, логика контроля и передача лидов. Находим, что мешает команде работать системно."
+  },
+  {
+    title: "План внедрения на 30 дней",
+    description:
+      "Собираем понятную дорожную карту: что делать сначала, какие метрики смотреть и как проверять, что изменения реально работают."
+  }
+] as const;
+
+const benefits = [
+  "Собираем контекст через короткую форму и Telegram, а не через многочасовые брифы.",
+  "Фокусируемся на практических точках роста: скорость реакции, квалификация, конверсии, дисциплина.",
+  "Отдаём не просто диагноз, а последовательность действий, которую можно брать в работу сразу."
+] as const;
+
+const steps = [
+  {
+    title: "Оставляете заявку",
+    description: "Фиксируете нишу, состав команды и ключевую проблему, чтобы мы сразу зашли в контекст."
+  },
+  {
+    title: "Отвечаете на вопросы в Telegram",
+    description: "Бот собирает важные детали по процессу продаж, не перегружая лишними полями."
+  },
+  {
+    title: "Получаете отчёт и план",
+    description: "Мы формируем выводы, приоритеты и рекомендации, которые можно обсуждать внутри команды."
+  }
+] as const;
+
+const faqItems = [
+  {
+    question: "Это замена консультанта или руководителя отдела продаж?",
+    answer:
+      "Нет. Это быстрый аналитический слой: помогает понять, что происходит в продажах и куда смотреть в первую очередь. Внедрение изменений всё равно требует людей и процессов."
+  },
+  {
+    question: "Нужен ли доступ к CRM и цифрам компании?",
+    answer:
+      "На старте достаточно описания воронки, команды и текущих болей. Если дальше захотите усилить точность, можно подключать данные глубже."
+  },
+  {
+    question: "Сколько времени это займёт с моей стороны?",
+    answer:
+      "Обычно форма плюс ответы в Telegram занимают 20-40 минут суммарно. Это асинхронный формат, без обязательных созвонов."
+  },
+  {
+    question: "Что я получу в итоге?",
+    answer:
+      "Вы получите структурированный разбор текущей ситуации, список приоритетов, объяснение причин просадки и пошаговый план на ближайшие 30 дней."
+  }
+] as const;
 
 export default function HomePage() {
   const router = useRouter();
@@ -47,228 +108,238 @@ export default function HomePage() {
   }
 
   return (
-    <main className="container pageWithShader">
-      <div className="shaderBackground" aria-hidden>
-        <ColorBends
-          rotation={90}
-          speed={0.2}
-          colors={["#A855F7"]}
-          transparent
-          autoRotate={0}
-          scale={0.7}
-          frequency={1}
-          warpStrength={1}
-          mouseInfluence={2}
-          parallax={0.5}
-          noise={0.34}
-          iterations={1}
-          intensity={1.5}
-          bandWidth={6}
-        />
-      </div>
-      <header className="hero">
-        <h1>AI-диагностика отдела продаж</h1>
-        <p className="sectionLead" style={{ marginBottom: 0 }}>
-          Соберём контекст по вашей команде и воронке, покажем узкие места и дадим приоритизированный план улучшений на
-          ближайший месяц — без лишней теории и «воды».
-        </p>
-        <div className="heroActions">
-          <a className="primary" href="#lead-form">
+    <main>
+      <section className="siteShell">
+        <header className="topbar">
+          <div className="brand">TopSell</div>
+          <nav className="topnav" aria-label="Основная навигация">
+            <a href="#services">Услуги</a>
+            <a href="#process">Процесс</a>
+            <a href="#faq">FAQ</a>
+          </nav>
+          <a className="topbarCta" href="#lead-form">
             Оставить заявку
           </a>
-          <a href="#services">Что входит</a>
-          <a href="#faq">Вопросы</a>
-        </div>
-      </header>
+        </header>
 
-      <section className="section" aria-labelledby="stats-title">
-        <h2 id="stats-title" className="sectionTitle">
-          Почему это имеет смысл
-        </h2>
-        <p className="sectionLead">
-          На крупных консалтинговых сайтах обычно много социального доказательства и программ. У нас фокус уже на первом
-          шаге: быстро понять, где «течёт» выручка и что менять в первую очередь.
-        </p>
-        <div className="stats">
-          <div className="stat">
-            <div className="statValue">
-              <CountUp to={24} duration={1.2} className="countUpText" /> ч
+        <section className="heroGrid">
+          <div className="heroCopy">
+            <span className="eyebrow">AI sales diagnostics</span>
+            <h1 className="heroTitle">Понимание проблем в продажах без долгого консалтинга</h1>
+            <p className="heroText">
+              Соберём контекст по команде, воронке и управлению, покажем узкие места и подготовим план действий на 30
+              дней. Формат быстрый, понятный и без лишней теории.
+            </p>
+            <div className="heroActions">
+              <a className="primary" href="#lead-form">
+                Начать диагностику
+              </a>
+              <a href="#services">Посмотреть формат</a>
             </div>
-            <div className="statLabel">ориентир по первому отчёту после сбора контекста</div>
           </div>
-          <div className="stat">
-            <div className="statValue">
-              <CountUp to={5} duration={1.2} className="countUpText" />-<CountUp to={7} duration={1.2} className="countUpText" />
-            </div>
-            <div className="statLabel">коротких вопросов в Telegram вместо длинных брифов</div>
-          </div>
-          <div className="stat">
-            <div className="statValue">
-              <CountUp to={1} duration={1} className="countUpText" />
-            </div>
-            <div className="statLabel">понятный список приоритетов, а не десяток слайдов «для галочки»</div>
-          </div>
-        </div>
-      </section>
 
-      <section className="section" id="services" aria-labelledby="services-title">
-        <h2 id="services-title" className="sectionTitle">
-          Услуги и формат
-        </h2>
-        <p className="sectionLead">
-          Не «построим отдел с нуля за N месяцев», а диагностика и дорожная карта под вашу реальность — как на
-          сильных лендингах в нише B2B, только быстрее и дешевле на старте.
-        </p>
-        <div className="services">
-          <article className="serviceCard">
-            <h3>Сбор контекста</h3>
-            <p>
-              Уточняем нишу, состав команды, текущую воронку и главную боль. Удобно в Telegram: можно отвечать
-              короткими сообщениями между делами.
-            </p>
-          </article>
-          <article className="serviceCard">
-            <h3>Диагностика продаж</h3>
-            <p>
-              Разбор типичных точек потерь: квалификация, скорость реакции, конверсии по этапам, мотивация, CRM и
-              регламенты — в привязке к тому, что вы описали.
-            </p>
-          </article>
-          <article className="serviceCard">
-            <h3>Отчёт и приоритеты</h3>
-            <p>
-              Структурированные выводы: что мешает росту сейчас, какой эффект ожидать от правок, что делать в первую
-              очередь, а что отложить.
-            </p>
-          </article>
-          <article className="serviceCard">
-            <h3>План на 30 дней</h3>
-            <p>
-              Пошаговый ориентир на месяц: гипотезы, метрики, контрольные точки. Без обещаний «удвоим за 2 месяца» —
-              только то, что логично вытекает из ваших данных.
-            </p>
-          </article>
-        </div>
-      </section>
+          <div className="heroPanel card">
+            <p className="heroPanelTitle">Что вы получаете</p>
+            <ul className="bulletList">
+              <li>Разбор текущей ситуации в отделе продаж</li>
+              <li>Приоритизированные точки роста</li>
+              <li>План внедрения на 2-4 недели</li>
+            </ul>
+            <div className="heroPanelStats">
+              <div className="miniStat">
+                <div className="miniStatValue">
+                  <CountUp to={24} duration={1.2} className="countUpText" /> ч
+                </div>
+                <div className="miniStatLabel">ориентир по первому отчёту</div>
+              </div>
+              <div className="miniStat">
+                <div className="miniStatValue">
+                  <CountUp to={5} duration={1.2} className="countUpText" />-<CountUp to={7} duration={1.2} className="countUpText" />
+                </div>
+                <div className="miniStatLabel">вопросов в Telegram</div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <section className="section" aria-labelledby="how-title">
-        <h2 id="how-title" className="sectionTitle">
-          Как это работает
-        </h2>
-        <p className="sectionLead">По смыслу похоже на «экскурсию в процесс», только в цифровом формате.</p>
-        <div className="steps">
-          <div className="step">
-            <div>
-              <h3>Заявка на сайте</h3>
-              <p>Оставляете контакты и кратко описываете ситуацию — этого достаточно, чтобы мы завели карточку лида.</p>
+        <section className="section blockSection" aria-labelledby="services-title" id="services">
+          <div className="sectionHead">
+            <span className="eyebrow">Наши услуги</span>
+            <h2 id="services-title" className="sectionTitle largeTitle">
+              Диагностика, которая помогает понять, что менять в первую очередь
+            </h2>
+            <p className="sectionLead wideLead">
+              Вдохновляемся чистой структурой Boldo: крупный оффер, ясные секции, хорошие отступы и удобное чтение как
+              на компьютере, так и на телефоне. Контент при этом остаётся твоим.
+            </p>
+          </div>
+          <div className="servicesGrid">
+            {services.map((service) => (
+              <article className="serviceCard featureCard" key={service.title}>
+                <div className="featureIcon" aria-hidden>
+                  •
+                </div>
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section splitSection">
+          <div className="splitMedia card darkCard">
+            <p className="darkCardEyebrow">Почему это имеет смысл</p>
+            <div className="metricsRow">
+              <div className="metricItem">
+                <div className="metricValue">
+                  <CountUp to={24} duration={1.2} className="countUpText" /> ч
+                </div>
+                <div className="metricLabel">до первого структурированного вывода</div>
+              </div>
+              <div className="metricItem">
+                <div className="metricValue">
+                  <CountUp to={1} duration={1} className="countUpText" />
+                </div>
+                <div className="metricLabel">единый список приоритетов вместо хаоса гипотез</div>
+              </div>
             </div>
           </div>
-          <div className="step">
-            <div>
-              <h3>Диалог в Telegram</h3>
-              <p>Бот задаёт уточняющие вопросы. Чем конкретнее ответы, тем точнее итоговый разбор.</p>
-            </div>
+
+          <div className="splitContent">
+            <h2 className="sectionTitle largeTitle">Не строим красивую теорию. Помогаем увидеть, где реально течёт выручка.</h2>
+            <ul className="checkList">
+              {benefits.map((benefit) => (
+                <li key={benefit}>{benefit}</li>
+              ))}
+            </ul>
+            <a className="textCta" href="#lead-form">
+              Оставить заявку
+            </a>
           </div>
-          <div className="step">
-            <div>
-              <h3>AI + проверка логики</h3>
-              <p>Модель собирает выводы в отчёт. Вы получаете ссылку на страницу статуса и материалы для обсуждения.</p>
-            </div>
+        </section>
+
+        <section className="section blockSection" aria-labelledby="process-title" id="process">
+          <div className="sectionHead">
+            <span className="eyebrow">Как это работает</span>
+            <h2 id="process-title" className="sectionTitle largeTitle">
+              Короткий путь от заявки до понятного плана действий
+            </h2>
           </div>
-          <div className="step">
+          <div className="processGrid">
+            {steps.map((step, index) => (
+              <article className="step processCard" key={step.title}>
+                <div className="processIndex">{String(index + 1).padStart(2, "0")}</div>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section splitSection reverseSplit">
+          <div className="splitContent">
+            <span className="eyebrow">Для собственника и команды</span>
+            <h2 className="sectionTitle largeTitle">Чтобы не спорить о симптомах, а быстро договориться о приоритетах</h2>
+            <p className="sectionLead wideLead">
+              Диагностика полезна, когда отдел продаж вроде бы работает, но результат нестабилен: падают конверсии,
+              менеджеры по-разному обрабатывают лиды, нет ясности, что влияет на рост сильнее всего.
+            </p>
+          </div>
+          <div className="quoteCard card">
+            <p className="quoteText">
+              «Идея не в том, чтобы заменить руководителя или консультанта, а в том, чтобы быстро собрать картину и
+              сократить путь до внятных решений».
+            </p>
+            <p className="quoteAuthor">TopSell Diagnostics</p>
+          </div>
+        </section>
+
+        <section className="section blockSection" id="faq" aria-labelledby="faq-title">
+          <div className="sectionHead">
+            <span className="eyebrow">Частые вопросы</span>
+            <h2 id="faq-title" className="sectionTitle largeTitle">
+              Всё, что обычно спрашивают до старта
+            </h2>
+          </div>
+          <div className="faq">
+            {faqItems.map((item) => (
+              <details key={item.question}>
+                <summary>{item.question}</summary>
+                <p>{item.answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <section className="section leadSection card" id="lead-form" aria-labelledby="form-title">
+          <div className="leadSectionHead">
             <div>
-              <h3>Следующий шаг</h3>
-              <p>
-                Решаете сами: внедрять с командой, подключать консультанта или углубляться в отдельный проект. Мы не
-                «закрываем» вас на бесконечный контракт.
+              <span className="eyebrow">Старт</span>
+              <h2 id="form-title" className="sectionTitle largeTitle">
+                Оставьте заявку на диагностику
+              </h2>
+              <p className="muted">
+                После отправки откроется страница со ссылкой на Telegram-бота. Там продолжим сбор контекста и перейдём
+                к деталям.
               </p>
             </div>
           </div>
-        </div>
-      </section>
+          <form className="leadForm" onSubmit={onSubmit}>
+            <div className="formColumns">
+              <label>
+                Имя
+                <input name="name" required minLength={2} />
+              </label>
+              <label>
+                Ниша бизнеса
+                <input name="niche" required minLength={2} />
+              </label>
+            </div>
 
-      <section className="section" id="faq" aria-labelledby="faq-title">
-        <h2 id="faq-title" className="sectionTitle">
-          Частые вопросы
-        </h2>
-        <p className="sectionLead">То, что обычно спрашивают до старта — в духе блоков доверия на B2B-сайтах.</p>
-        <div className="faq">
-          <details>
-            <summary>Это замена консультанта или «живого» отдела продаж?</summary>
-            <p>
-              Нет. Это быстрый срез и гипотезы на основе ваших ответов. Для внедрения регламентов, обучения менеджеров
-              и жёсткого контроля исполнения всё равно нужны люди и процессы внутри компании.
-            </p>
-          </details>
-          <details>
-            <summary>Нужен ли доступ к CRM и внутренним цифрам?</summary>
-            <p>
-              На старте достаточно описания воронки и показателей своими словами. Если позже решите подключить CRM и
-              выгрузки — диагностика станет ещё точнее, но это не обязательное условие.
-            </p>
-          </details>
-          <details>
-            <summary>Сколько это занимает по времени?</summary>
-            <p>
-              Заявка — пара минут. Ответы в боте обычно укладываются в один небольшой созвон по длительности, но без
-              синхронизации: можно отвечать асинхронно в удобное время.
-            </p>
-          </details>
-          <details>
-            <summary>Конфиденциальность</summary>
-            <p>
-              Не публикуем ваши данные и не используем их как публичный кейс без отдельного согласия. Детали хранения
-              и обработки можно прописать в политике — по запросу добавим на сайт отдельной страницей.
-            </p>
-          </details>
-          <details>
-            <summary>Что если ответы бота покажутся «слишком общими»?</summary>
-            <p>
-              Качество растёт от детализации: конкретные цифры, примеры сделок, где отваливаются клиенты, как устроена
-              мотивация. Чем больше фактов, тем меньше шаблонов в итоге.
-            </p>
-          </details>
-        </div>
-      </section>
+            <div className="formColumns">
+              <label>
+                Размер команды продаж
+                <input name="team_size" type="number" required min={1} max={5000} />
+              </label>
+              <label>
+                Telegram username
+                <input name="telegram_username" placeholder="@username" />
+              </label>
+            </div>
 
-      <section className="section card" id="lead-form" aria-labelledby="form-title">
-        <h2 id="form-title" className="sectionTitle" style={{ marginTop: 0 }}>
-          Заявка на диагностику
-        </h2>
-        <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>
-          После отправки откроется страница со ссылкой на Telegram-бота — там продолжим сбор контекста.
-        </p>
-        <form className="grid" onSubmit={onSubmit}>
-          <label>
-            Имя
-            <input name="name" required minLength={2} />
-          </label>
-          <label>
-            Ниша бизнеса
-            <input name="niche" required minLength={2} />
-          </label>
-          <label>
-            Размер команды продаж
-            <input name="team_size" type="number" required min={1} max={5000} />
-          </label>
-          <label>
-            Текущая проблема
-            <textarea name="problem" rows={4} required minLength={10} />
-          </label>
-          <label>
-            Telegram username
-            <input name="telegram_username" placeholder="@username" />
-          </label>
-          <label>
-            Телефон
-            <input name="phone" inputMode="tel" />
-          </label>
+            <label>
+              Текущая проблема
+              <textarea name="problem" rows={5} required minLength={10} />
+            </label>
 
-          <button disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Отправка..." : "Отправить заявку"}
-          </button>
-          {error ? <p className="errorText">{error}</p> : null}
-        </form>
+            <label>
+              Телефон
+              <input name="phone" inputMode="tel" />
+            </label>
+
+            <div className="formFooter">
+              <button disabled={isSubmitting} type="submit">
+                {isSubmitting ? "Отправка..." : "Отправить заявку"}
+              </button>
+              {error ? <p className="errorText">{error}</p> : null}
+            </div>
+          </form>
+        </section>
+
+        <footer className="footer">
+          <div>
+            <div className="brand footerBrand">TopSell</div>
+            <p className="muted footerText">AI-диагностика отдела продаж для быстрого понимания узких мест и точек роста.</p>
+          </div>
+          <div className="footerLinks">
+            <a href="#services">Услуги</a>
+            <a href="#process">Процесс</a>
+            <a href="#faq">FAQ</a>
+            <a href="#lead-form">Заявка</a>
+          </div>
+        </footer>
       </section>
     </main>
   );
