@@ -25,6 +25,12 @@ FAQ_ANSWERS = {
 }
 
 
+CONSULTATION_OFFER_TEXT = (
+    "Не совсем понял сообщение. Если захотите продолжить позже или обсудить задачу со специалистом, "
+    'напишите "Хочу консультацию" — и мы отдельно свяжемся с вами.'
+)
+
+
 @dp.message(Command("faq"))
 async def on_faq(message: Message):
     lines = ["FAQ (коротко):"]
@@ -96,7 +102,7 @@ async def on_answer(message: Message):
                 "Принято. Зафиксировали запрос на консультацию и скоро свяжемся с вами, чтобы согласовать следующий шаг."
             )
             return
-        await message.answer("Ответ засчитан. Для сохранения в систему отвечай на сообщение с вопросом от бота.")
+        await message.answer(CONSULTATION_OFFER_TEXT)
         return
 
     async with httpx.AsyncClient(timeout=20) as client:
